@@ -1,0 +1,503 @@
+---
+title: "Explorando os benefícios educacionais de infográficos"
+output:
+  html_document:
+    toc: yes
+  pdf_document:
+    fig_caption: yes
+    toc: yes
+---
+
+```{r, include=FALSE, echo=FALSE}
+library(modeest)
+library(Hmisc)
+library(corrgram)
+library(corrplot)
+options(digits=16)
+```
+
+
+\pagebreak
+```{r data, echo=FALSE}
+
+# Carregar os dados preparados do experimento
+experimentData <- read.csv("prepared_data.csv", sep=';')
+
+experimentData.infograficos <-experimentData[experimentData$sistema == 'infograficos',]
+experimentData.graficos <-experimentData[experimentData$sistema == 'graficos',]
+experimentData.textos <-experimentData[experimentData$sistema == 'textos',]
+experimentData.visuais <-experimentData[experimentData$visver == 1,]
+experimentData.verbais <-experimentData[experimentData$visver == 2,]
+
+experimentData.visuais.infograficos <-experimentData[experimentData$visver == 1 & experimentData$sistema == 'infograficos',]
+experimentData.visuais.graficos <-experimentData[experimentData$visver == 1 & experimentData$sistema == 'graficos',]
+experimentData.visuais.textos <-experimentData[experimentData$visver == 1 & experimentData$sistema == 'textos',]
+
+experimentData.verbais.infograficos <- experimentData[experimentData$visver == 2 & experimentData$sistema == 'infograficos',]
+experimentData.verbais.graficos <- experimentData[experimentData$visver == 2 & experimentData$sistema == 'graficos',]
+experimentData.verbais.textos <- experimentData[experimentData$visver == 2 & experimentData$sistema == 'textos',]
+
+experimentData.forcorr <- data.frame(experimentData$idade, experimentData$preteste, experimentData$posteste, experimentData$testeretencao, experimentData$retencao, experimentData$aprendizado, experimentData$retencao, experimentData$intervencao, experimentData$mediaprazer, experimentData$tmedio)
+
+experimentData.special <- data.frame(experimentData$preteste, experimentData$posteste, experimentData$testeretencao, experimentData$aprendizado, experimentData$retencao, experimentData$mediaprazer, experimentData$tmedio)
+names(experimentData.special) <- c("preteste", "posteste", "testeretencao", "aprendizado", "retencao", "mediaprazer", "tmedio")
+
+experimentData.infograficos.special <- data.frame(experimentData.infograficos$preteste, experimentData.infograficos$posteste, experimentData.infograficos$testeretencao, experimentData.infograficos$aprendizado, experimentData.infograficos$retencao, experimentData.infograficos$mediaprazer, experimentData.infograficos$tmedio)
+names(experimentData.infograficos.special) <- c("preteste", "posteste", "testeretencao", "aprendizado", "retencao", "mediaprazer", "tmedio")
+
+experimentData.graficos.special <- data.frame(experimentData.graficos$preteste, experimentData.graficos$posteste, experimentData.graficos$testeretencao, experimentData.graficos$aprendizado, experimentData.graficos$retencao, experimentData.graficos$mediaprazer, experimentData.graficos$tmedio)
+names(experimentData.graficos.special) <- c("preteste", "posteste", "testeretencao", "aprendizado", "retencao", "mediaprazer", "tmedio")
+
+experimentData.textos.special <- data.frame(experimentData.textos$preteste, experimentData.textos$posteste, experimentData.textos$testeretencao, experimentData.textos$aprendizado, experimentData.textos$retencao, experimentData.textos$mediaprazer, experimentData.textos$tmedio)
+names(experimentData.textos.special) <- c("preteste", "posteste", "testeretencao", "aprendizado", "retencao", "mediaprazer", "tmedio")
+
+```
+# ESTATÍSTICA DESCRITIVA
+
+## DISTRIBUIÇÃO DAS AMOSTRAS
+
+### IDADE DOS SUJEITOS
+
+```{r, echo=FALSE}
+
+plot(density(experimentData$idade), main = "Distribuição das idades dos sujeitos", ylab = "Densidade", xlab = "Idade")
+abline(v=mean(experimentData$idade), col="lightpink")
+
+shapiro.test(experimentData$idade)
+
+```
+
+### SEXO
+
+```{r, echo=FALSE}
+
+barplot(table(experimentData$sexo), col = c("lightpink", "lightskyblue"), ylab = "Quantidade de sujeitos", names=c("Feminino", "Masculino"))
+```
+
+### ESTILO DE APRENDIZAGEM
+
+```{r, echo=FALSE}
+
+barplot(table(experimentData$visver), col = c("lightpink", "lightskyblue"), ylab = "Quantidade de sujeitos", xlab = "Estilos", names=c("Visual", "Verbal"))
+```
+
+### ACERTOS NO PRETESTE
+
+```{r, echo=FALSE}
+plot(density(experimentData$preteste), main = "Distribuição dos acertos no Pré-teste", ylab = "Densidade", xlab = "Número de acertos")
+abline(v=mean(experimentData$preteste), col="lightpink")
+
+shapiro.test(experimentData$preteste)
+```
+
+### ACERTOS NO POSTESTE (INFOGRAFICOS)
+
+```{r, echo=FALSE}
+plot(density(experimentData.infograficos$posteste), main = "Distribuição dos acertos no Pós-teste utilizando infográficos", ylab = "Densidade", xlab = "Número de acertos")
+abline(v=mean(experimentData.infograficos$posteste), col="lightpink")
+
+shapiro.test(experimentData.infograficos$posteste)
+```
+
+
+### ACERTOS NO POSTESTE (GRAFICOS)
+
+```{r, echo=FALSE}
+plot(density(experimentData.graficos$posteste), main = "Distribuição dos acertos no Pós-teste utilizando gráficos", ylab = "Densidade", xlab = "Número de acertos")
+abline(v=mean(experimentData.graficos$posteste), col="lightpink")
+
+shapiro.test(experimentData.graficos$posteste)
+```
+
+
+### ACERTOS NO POSTESTE (TEXTOS)
+
+```{r, echo=FALSE}
+plot(density(experimentData.textos$posteste), main = "Distribuição dos acertos no Pós-teste utilizando textos", ylab = "Densidade", xlab = "Número de acertos")
+abline(v=mean(experimentData.textos$posteste), col="lightpink")
+
+shapiro.test(experimentData.textos$posteste)
+```
+
+### ACERTOS POSTESTE (AGREGADO)
+
+```{r, echo=FALSE}
+plot(density(experimentData$posteste), main = "Distribuição dos acertos agregados no Pós-teste", ylab = "Densidade", xlab = "Número de acertos")
+abline(v=mean(experimentData$posteste), col="lightpink")
+
+shapiro.test(experimentData$posteste)
+```
+
+### ACERTOS NA RETENCAO
+
+```{r, echo=FALSE}
+plot(density(experimentData$testeretencao), main = "Distribuição dos acertos na Retenção", ylab = "Densidade", xlab = "Número de acertos")
+abline(v=mean(experimentData$testeretencao), col="lightpink")
+
+shapiro.test(experimentData$testeretencao)
+```
+
+
+### APRENDIZADO (POSTESTE - PRETESTE)
+
+```{r, echo=FALSE}
+plot(density(experimentData$aprendizado), main = "Distribuição do aprendizado", ylab = "Densidade", xlab = "Delta de acertos")
+abline(v=mean(experimentData$aprendizado), col="lightpink")
+
+shapiro.test(experimentData$aprendizado)
+```
+
+### RETENCAO (TESTERETENCAO - POSTESTE)
+
+```{r, echo=FALSE}
+plot(density(experimentData$retencao), main = "Distribuição da retenção", ylab = "Densidade", xlab = "Delta de acertos")
+abline(v=mean(experimentData$retencao), col="lightpink")
+
+shapiro.test(experimentData$retencao)
+```
+
+### SATISFAÇAO
+
+```{r, echo=FALSE}
+plot(density(experimentData$mediaprazer), main = "Distribuição da satisfação durante o Pós-teste", ylab = "Densidade", xlab = "Nível de satisfação")
+abline(v=mfv(experimentData$mediaprazer), col="lightpink")
+
+shapiro.test(experimentData$mediaprazer)
+```
+
+### TEMPO GASTO
+
+```{r, echo=FALSE}
+plot(density(experimentData$tmedio), main = "Distribuição do tempo médio gasto durante o Pós-teste", ylab = "Densidade", xlab = "Duração em segundos")
+abline(v=mean(experimentData$tmedio), col="lightpink")
+
+shapiro.test(experimentData$tmedio)
+```
+
+## BOXPLOTS
+
+### ACERTOS DURANTE AS TRES FASES EM FUNCAO DOS TRATAMENTOS
+
+```{r, echo=FALSE}
+dpar <- par()$mar
+par(mar=c(6, 5, 6, 6))
+boxplot(experimentData.infograficos$preteste, experimentData.graficos$preteste, experimentData.textos$preteste, experimentData.infograficos$posteste, experimentData.graficos$posteste, experimentData.textos$posteste, experimentData.infograficos$testeretencao, experimentData.graficos$testeretencao, experimentData.textos$testeretencao, las=2, names = c("Pré-teste (I)", "Pré-teste (G)", "Pré-teste (T)", "Pós-teste (I)", "Pós-teste (G)", "Pós-teste (T)", "Retenção (I)", "Retenção (G)", "Retenção (T)"), col=c("lightgoldenrod", "lightblue", "lightpink", "lightgoldenrod", "lightblue", "lightpink", "lightgoldenrod", "lightblue", "lightpink"), main ="Acertos durante as três fases", ylab="Número de acertos")
+par(mar=dpar)
+```
+
+### APRENDIZADO E RETENCAO EM FUNCAO DOS TRATAMENTOS
+
+```{r, echo=FALSE}
+boxplot(experimentData.infograficos$aprendizado, experimentData.graficos$aprendizado, experimentData.textos$aprendizado, experimentData.infograficos$retencao, experimentData.graficos$retencao, experimentData.textos$retencao, names = c("Infográficos", "Gráficos", "Textos", "Infográficos", "Gráficos", "Textos"), col=c("lightpink", "lightpink", "lightpink", "lightblue", "lightblue", "lightblue"), main ="Aprendizado e Retenção em função dos tratamentos", xlab="Tratamentos", ylab="Delta de acertos")
+legend("topright", inset=.02, title="Legenda", c("Aprendizado","Retenção"), fill=c("lightpink", "lightblue"), cex=1)
+```
+
+### TEMPO GASTO EM FUNCAO DOS TRATAMENTOS
+
+```{r, echo=FALSE}
+
+boxplot(experimentData.infograficos$tmedio, experimentData.graficos$tmedio, experimentData.textos$tmedio, names = c("Infográficos", "Gráficos", "Textos"), col="lightpink", main ="Tempo gasto durante o Pós-teste em função dos tratamentos", xlab="Tratamentos", ylab="Tempo gasto em segundos")
+
+```
+
+### SATISFAÇÃO EM FUNCAO DOS TRATAMENTOS
+
+```{r, echo=FALSE}
+
+boxplot(experimentData.infograficos$mediaprazer, experimentData.graficos$mediaprazer, experimentData.textos$mediaprazer, names = c("Infográficos", "Gráficos", "Textos"), col="lightpink", main ="Satisfação em função dos tratamentos", xlab="Tratamentos", ylab="Satisfação")
+
+```
+
+## DADOS DESCRITIVOS
+
+```{r, echo=FALSE}
+
+df <- data.frame(experimentData$idade, experimentData$sexo, experimentData$visver, experimentData$sistema, experimentData$preteste, experimentData$posteste, experimentData$testeretencao, experimentData$aprendizado, experimentData$retencao, experimentData$mediaprazer, experimentData$tmedio)
+names(df) <- c("idade", "sexo", "visver", "sistema", "preteste", "posteste", "testeretencao", "aprendizado", "retencao", "mediaprazer", "tmedio")
+
+summary(df)
+```
+
+# CORRELACOES
+
+## MATRIZES DE CORRELACOES
+
+### INFOGRAFICOS
+
+```{r, echo=FALSE}
+correlationData <- rcorr(as.matrix(experimentData.infograficos.special), type="pearson")
+
+experimentData.infograficos.special.mcorr <- as.matrix(data.frame(correlationData[1]))
+colnames(experimentData.infograficos.special.mcorr) <- c("preteste", "posteste", "testeretencao", "aprendizado", "retencao", "mediaprazer", "tmedio")
+
+experimentData.infograficos.special.mcorr.p <- as.matrix(data.frame(correlationData[3]))
+
+corrplot(experimentData.infograficos.special.mcorr, method="pie", p.mat=experimentData.infograficos.special.mcorr.p, sig.level = 0.05)
+
+corrplot(experimentData.infograficos.special.mcorr, method="number", p.mat=experimentData.infograficos.special.mcorr.p, sig.level = 0.05)
+```
+
+### GRAFICOS
+
+```{r, echo=FALSE}
+correlationData <- rcorr(as.matrix(experimentData.graficos.special), type="pearson")
+
+experimentData.graficos.special.mcorr <- as.matrix(data.frame(correlationData[1]))
+colnames(experimentData.graficos.special.mcorr) <- c("preteste", "posteste", "testeretencao", "aprendizado", "retencao", "mediaprazer", "tmedio")
+
+experimentData.graficos.special.mcorr.p <- as.matrix(data.frame(correlationData[3]))
+
+corrplot(experimentData.graficos.special.mcorr, method="pie", p.mat=experimentData.graficos.special.mcorr.p, sig.level = 0.05)
+
+corrplot(experimentData.graficos.special.mcorr, method="number", p.mat=experimentData.graficos.special.mcorr.p, sig.level = 0.05)
+```
+
+### TEXTOS
+
+```{r, echo=FALSE}
+correlationData <- rcorr(as.matrix(experimentData.textos.special), type="pearson")
+
+experimentData.textos.special.mcorr <- as.matrix(data.frame(correlationData[1]))
+colnames(experimentData.textos.special.mcorr) <- c("preteste", "posteste", "testeretencao", "aprendizado", "retencao", "mediaprazer", "tmedio")
+
+experimentData.textos.special.mcorr.p <- as.matrix(data.frame(correlationData[3]))
+
+corrplot(experimentData.textos.special.mcorr, method="pie", p.mat=experimentData.textos.special.mcorr.p, sig.level = 0.05)
+
+corrplot(experimentData.textos.special.mcorr, method="number", p.mat=experimentData.textos.special.mcorr.p, sig.level = 0.05)
+```
+
+### AGREGADO
+
+```{r, echo=FALSE}
+correlationData <- rcorr(as.matrix(experimentData.special), type="pearson")
+
+experimentData.special.mcorr <- as.matrix(data.frame(correlationData[1]))
+colnames(experimentData.special.mcorr) <- c("preteste", "posteste", "testeretencao", "aprendizado", "retencao", "mediaprazer", "tmedio")
+
+experimentData.special.mcorr.p <- as.matrix(data.frame(correlationData[3]))
+
+corrplot(experimentData.special.mcorr, method="pie", p.mat=experimentData.special.mcorr.p, sig.level = 0.05)
+
+corrplot(experimentData.special.mcorr, method="number", p.mat=experimentData.special.mcorr.p, sig.level = 0.05)
+```
+
+<!--## CORRELACAO TEMPO E APRENDIZADO
+
+```{r, echo=FALSE}
+cor.test(experimentData$tmedio, experimentData$aprendizado, method = "pearson")
+
+plot(experimentData$tmedio, experimentData$aprendizado, main = "Correlação entre Tempo e Aprendizado", xlab = "Tempo em milisegundos", ylab = "Delta de acertos")
+abline(lm(experimentData$aprendizado ~ experimentData$tmedio), col = "lightpink")
+```
+
+## CORRELACAO TEMPO E APRENDIZADO (INFOGRAFICO)
+
+```{r, echo=FALSE}
+cor.test(experimentData.infograficos$tmedio, experimentData.infograficos$aprendizado, method = "pearson")
+
+plot(experimentData.infograficos$tmedio, experimentData.infograficos$aprendizado, main = "Correlação entre Tempo e Aprendizado utilizando Infográficos", xlab = "Tempo em milisegundos", ylab = "Delta de acertos")
+abline(lm(experimentData.infograficos$aprendizado ~ experimentData.infograficos$tmedio), col = "lightpink")
+```
+
+## CORRELACAO TEMPO E APRENDIZADO (GRAFICO)
+
+```{r, echo=FALSE}
+cor.test(experimentData.graficos$tmedio, experimentData.graficos$aprendizado, method = "pearson")
+
+plot(experimentData.graficos$tmedio, experimentData.graficos$aprendizado, main = "Correlação entre Tempo e Aprendizado utilizando Gráficos", xlab = "Tempo em milisegundos", ylab = "Delta de acertos")
+abline(lm(experimentData.graficos$aprendizado ~ experimentData.graficos$tmedio), col = "lightpink")
+```
+
+## CORRELACAO TEMPO E APRENDIZADO (TEXTO)
+
+```{r, echo=FALSE}
+cor.test(experimentData.textos$tmedio, experimentData.textos$aprendizado, method = "pearson")
+
+plot(experimentData.textos$tmedio, experimentData.textos$aprendizado, main = "Correlação entre Tempo e Aprendizado utilizando Textos", xlab = "Tempo em milisegundos", ylab = "Delta de acertos")
+abline(lm(experimentData.textos$aprendizado ~ experimentData.textos$tmedio), col = "lightpink")
+```
+
+## CORRELACAO TEMPO E RETENCAO
+
+```{r, echo=FALSE}
+cor.test(experimentData$tmedio, experimentData$retencao, method = "pearson")
+
+plot(experimentData$tmedio, experimentData$retencao, main = "Correlação entre Tempo e Retenção", xlab = "Tempo em milisegundos", ylab = "Delta de acertos")
+abline(lm(experimentData$retencao ~ experimentData$tmedio), col = "lightpink")
+```
+
+## CORRELACAO TEMPO E RETENCAO (INFOGRAFICO)
+
+```{r, echo=FALSE}
+cor.test(experimentData.infograficos$tmedio, experimentData.infograficos$retencao, method = "pearson")
+
+plot(experimentData.infograficos$tmedio, experimentData.infograficos$retencao, main = "Correlação entre Tempo e Retenção utilizando Infográficos", xlab = "Tempo em milisegundos", ylab = "Delta de acertos")
+abline(lm(experimentData.infograficos$retencao ~ experimentData.infograficos$tmedio), col = "lightpink")
+```
+
+## CORRELACAO TEMPO E RETENCAO (GRAFICO)
+
+```{r, echo=FALSE}
+cor.test(experimentData.graficos$tmedio, experimentData.graficos$retencao, method = "pearson")
+
+plot(experimentData.graficos$tmedio, experimentData.graficos$retencao, main = "Correlação entre Tempo e Retenção utilizando Gráficos", xlab = "Tempo em milisegundos", ylab = "Delta de acertos")
+abline(lm(experimentData.graficos$retencao ~ experimentData.graficos$tmedio), col = "lightpink")
+```
+
+## CORRELACAO TEMPO E RETENCAO (TEXTO)
+
+```{r, echo=FALSE}
+cor.test(experimentData.textos$tmedio, experimentData.textos$retencao, method = "pearson")
+
+plot(experimentData.textos$tmedio, experimentData.textos$retencao, main = "Correlação entre Tempo e Retenção utilizando Textos", xlab = "Tempo em milisegundos", ylab = "Delta de acertos")
+abline(lm(experimentData.textos$retencao ~ experimentData.textos$tmedio), col = "lightpink")
+```
+!-->
+
+# TESTES DE HIPÓTESE
+
+## APRENDIZADO
+
+### ANOVA (APRENDIZADO ~ MATERIAL)
+<!--
+Does the type of learning material affect the learning?
+Compare average learning between groups
+H0: µ(infographic) = µ(graphic)  V = µ(text)
+!-->
+```{r, echo=FALSE}
+experimentData.aprendizado.sistema.aov <- aov(experimentData$aprendizado ~ experimentData$sistema)
+summary(experimentData.aprendizado.sistema.aov)
+```
+
+### ANOVA (APRENDIZADO ~ ESTILO)
+<!--
+Does the proper learning style affect the learning?
+Compare average learning within and  between groups
+H1: µ(visual)(infographic) > µ(verbal) (infographic)
+H2: µ(verbal) (text) > µ(verbal) (infographic)
+!-->
+```{r, echo=FALSE}
+experimentData.aprendizado.visver.aov <- aov(experimentData$aprendizado ~ experimentData$visver)
+summary(experimentData.aprendizado.visver.aov)
+```
+
+### ANOVA (APRENDIZADO ~ TEMPO)
+<!--
+Does the interaction time affect the learning?
+Find correlation between time spend in the visualization and learning
+H1: The more students spend time on the material, the greatest the learning gain.
+!-->
+```{r, echo=FALSE}
+experimentData.aprendizado.tmedio.aov <- aov(experimentData$aprendizado ~ experimentData$tmedio)
+summary(experimentData.aprendizado.tmedio.aov)
+```
+
+### ANOVA (APRENDIZADO ~ SATISFACAO)
+<!---
+Does the self-assesment of pleasure affect the learning?
+Find correlation between enjoyment and learning
+H1: The more enjoy the material, the greatest the learning gain.
+!-->
+```{r, echo=FALSE}
+experimentData.aprendizado.mediaprazer.aov <- aov(experimentData$aprendizado ~ experimentData$mediaprazer)
+summary(experimentData.aprendizado.mediaprazer.aov)
+```
+
+## RENTENCAO
+
+### ANOVA (RETENCAO ~ MATERIAL)
+<!--
+Does the type of learning material affect the retention?
+Compare average retention between groups
+H1: µ(infographic) > µ(graphic) > µ(text)
+!-->
+```{r, echo=FALSE}
+experimentData.retencao.material.aov <- aov(experimentData$retencao ~ experimentData$sistema)
+summary(experimentData.retencao.material.aov)
+```
+
+### ANOVA (RETENCAO ~ ESTILO)
+<!--
+Does the proper learning style affect the retention?
+Compare average retention within and  between groups
+H1: µ(visual)(infographic) > µ(verbal) (infographic)
+H2: µ(verbal) (text) > µ(verbal) (infographic)
+!-->
+```{r, echo=FALSE}
+experimentData.retencao.estilo.aov <- aov(experimentData$retencao ~ experimentData$visver)
+summary(experimentData.retencao.estilo.aov)
+```
+
+### ANOVA (RETENCAO ~ TEMPO)
+<!--
+Does the interaction time affect the retention?
+Find correlation between time spend in the visualization and retention
+H1: The more students spend time on the material, the greatest the retention gain.
+!-->
+```{r, echo=FALSE}
+experimentData.retencao.tmedio.aov <- aov(experimentData$retencao ~ experimentData$tmedio)
+summary(experimentData.retencao.tmedio.aov)
+```
+
+### ANOVA (RETENCAO ~ SATISFACAO)
+<!--
+Does the self-assesment of pleasure affect the retention?
+Find correlation between enjoyment and retention
+H1: The more enjoy the material, the greatest the retention gain.
+!-->
+```{r, echo=FALSE}
+experimentData.retencao.mediaprazer.aov <- aov(experimentData$retencao ~ experimentData$mediaprazer)
+summary(experimentData.retencao.mediaprazer.aov)
+```
+
+## EXTRAS
+
+### ANOVA (SATISFACAO ~ MATERIAL)
+<!--
+Does the type of learning material affect the enjoyment?
+Compare average enjoyment between groups
+H1: µ(infographic) > µ(graphic) > µ(text)
+!-->
+```{r, echo=FALSE}
+experimentData.mediaprazer.sistema.aov <- aov(experimentData$mediaprazer ~ experimentData$sistema)
+summary(experimentData.mediaprazer.sistema.aov)
+```
+
+### ANOVA (SATISFACAO ~ ESTILO)
+<!--
+Does the proper learning style affect the enjoyment?
+Compare average enjoyment within and  between groups
+H1: µ(visual)(infographic) = µ(verbal) (infographic)
+H2: µ(verbal) (text) > µ(verbal) (infographic)
+!-->
+```{r, echo=FALSE}
+experimentData.mediaprazer.estilo.aov <- aov(experimentData$mediaprazer ~ experimentData$visver)
+summary(experimentData.mediaprazer.estilo.aov)
+```
+
+<!--
+### ANOVA SATISFACAO (AGREGADO)
+```{r, echo=FALSE}
+experimentData.prazer_material.aov <- aov(experimentData$mediaprazer ~ experimentData$sistema)
+summary(experimentData.prazer_material.aov)
+```
+
+### ANOVA SATISFACAO (VERBAIS)
+```{r, echo=FALSE}
+experimentData.verbal_sistema.aov <- aov(experimentData.verbais$mediaprazer ~ experimentData.verbais$sistema)
+summary(experimentData.verbal_sistema.aov)
+```
+
+### ANOVA SATISFACAO (VISUAL)
+```{r, echo=FALSE}
+experimentData.visuais_sistema.aov <- aov(experimentData.visuais$mediaprazer ~ experimentData.visuais$sistema)
+summary(experimentData.visuais_sistema.aov)
+```
+
+### TWO-WAY ANOVA SATISFACAO ~ TRATAMENTO:ESTILO (AGREGADO)
+```{r, echo=FALSE}
+experimentData.prazer_material_estilo.aov <- aov(experimentData$mediaprazer ~ experimentData$sistema * experimentData$visver)
+summary(experimentData.prazer_material_estilo.aov)
+```
+!-->
